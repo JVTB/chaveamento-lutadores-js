@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index</title>
+
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: rgb(207, 255, 255);
+            font-family: sans-serif;
+        }
+
+        h1 {
+            color: rgb(14, 59, 32);
+        }
+
+        h2 {
+            color: rgb(41, 53, 49);
+            margin-right: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .horizontal {
+            display: flex;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+
+        .horizontal>* {
+            margin-top: 0;
+        }
+
+        table {
+            border: 1px #c0c0c0 solid;
+            width: 100%;
+            margin-top: 0.75rem;
+        }
+
+        table th {
+            background-color: rgb(14, 59, 32);
+            color: #fff;
+            padding: 0.5rem;
+        }
+
+        table td {
+            background-color: #f0f0f0;
+            color: #0c0c0c;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 1.5rem auto;
+            background-color: rgb(181, 237, 241);
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+
+        button {
+            border: 0;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background: rgb(41, 53, 49);
+            color: #fff;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgb(14, 59, 32);
+
+        }
+
+        ul {
+            margin-top: 0.5rem;
+            list-style: none;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 1rem;
+        }
+
+        li {
+            padding: 0.25rem 0;
+
+        }
+
+        li+li {
+            border-top: 1px solid #eeeeee;
+
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+
+        <form onsubmit="" id="formulario">
+
+            <h1>Adicionar Lutador</h1>
+            <input type="text" id="campotexto" required>
+
+            <br>
+
+            <h2>Categoria do Lutador</h2>
+
+            <label>
+                <input type="radio" name="situation" value="1" required>
+                Leve</label>
+            <br>
+
+            <label>
+                <input type="radio" name="situation" value="2" required>
+                Medio
+            </label>
+            <br>
+
+            <label>
+                <input type="radio" name="situation" value="3" required>
+                Pesado
+            </label>
+
+            <br>
+            <br>
+
+            <div onKeyPress="addItemEnter(event)"></div>
+
+            <button type="submit">Enter</button>
+        </form>
+
+        <h2>Lutadores adicionados</h2>
+
+        <ul id="lista1">
+
+        </ul>
+
+        <div class="horizontal">
+            <h2>Tabela de Chaveamento</h2>
+            <button id="chaveamento" onclick="chaveamentoElemento()">Fazer Chaveamento</button>
+        </div>
+
+        <div id="tabela"></div>
+    </div>
+    <script>
+        const situationOptions = [
+            { value: 1, label: "Leve" },
+            { value: 2, label: "Medio" },
+            { value: 3, label: "Pesado" },
+        ]
+
+        let formularioElemento = document.getElementById("formulario")
+        let listaLutadores = []
+        let campotextoElemento = document.getElementById("campotexto")
+        let listaElemento = document.getElementById("lista1")
+        formularioElemento.addEventListener('submit', handleSubmit)
+
+        function chaveamentoElemento() {
+            const lutas = getChaveamento(listaLutadores)
+            function criarTabela(conteudo) {
+                var tabela = document.createElement("table");
+                var thead = document.createElement("thead");
+                var tbody = document.createElement("tbody");
+                var thd = function (i) { return (i == 0) ? "th" : "td"; };
+                for (var i = 0; i < conteudo.length; i++) {
+                    var tr = document.createElement("tr");
+                    for (var o = 0; o < conteudo[i].length; o++) {
+                        var t = document.createElement(thd(i));
+                        var texto = document.createTextNode(conteudo[i][o]);
+                        t.appendChild(texto);
+                        tr.appendChild(t);
+                    }
+                    (i == 0) ? thead.appendChild(tr) : tbody.appendChild(tr);
+                }
+                tabela.appendChild(thead);
+                tabela.appendChild(tbody);
+                return tabela;
+            }
+
+            const mapLutas = luta => {
+                const categoria = situationOptions.find(option => option.value == luta.categoria).label
+                const nomeLutador1 = luta.lutador1.nome
+                const nomeLutador2 = luta.lutador2?.nome || "Não encontrado"
+
+                return [categoria, nomeLutador1, "-", nomeLutador2]
+            }
+            const tabelaElemento = document.getElementById("tabela")
+            tabelaElemento.innerHTML = ""
+            tabelaElemento.appendChild(criarTabela([
+                ["Categoria", "Lutador 1", "X", "Lutador 2"],
+                ...lutas.map(mapLutas)
+
+            ]))
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault()
+            addItem()
+        }
+
+        let mostrarItem = () => {
+            listaElemento.innerHTML = ""
+            listaLutadores.forEach(item => {
+                let elemento = document.createElement("li")
+                elemento.innerText = item.nome + " - " + situationOptions.find(option => option.value == item.categoria).label
+
+
+                listaElemento.appendChild(elemento)
+            })
+        }
+
+        mostrarItem()
+
+        function addItem() {
+            let situationElemento = document.querySelector('input[name="situation"]:checked')
+            const lutador = {
+                nome: campotextoElemento.value,
+                categoria: situationElemento.value,
+            }
+            listaLutadores.unshift(lutador);
+            mostrarItem()
+            campotextoElemento.value = ''
+        }
+
+        function addItemEnter(event) {
+            const key = event.which || event.keyCode
+            if (key == '13') {
+                document.forms[0].submit()
+            }
+        }
+
+        function getChaveamento(tempLutadores, lutas = []) {
+            let lutadores = [...tempLutadores]
+
+            if (!lutadores.length) return lutas
+
+            const lutador1 = lutadores[0]
+            lutadores.shift()
+
+            let lutador2 = null
+            for (const lutador of lutadores) { //Para cada lutador de Lutadores
+                if (lutador.categoria === lutador1.categoria) {
+                    lutador2 = lutador
+                    break
+                }
+            }
+            lutadores = lutadores.filter(lutador => lutador.nome !== lutador2?.nome)
+
+            const luta = {
+                lutador1, lutador2, categoria: lutador1.categoria
+            }
+            
+            lutas.unshift(luta)
+            return getChaveamento(lutadores, lutas)
+        }
+
+    </script>
+
+</body>
+
+</html>
